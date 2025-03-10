@@ -18,7 +18,7 @@ ENV PATH="/usr/src/app/venv/bin:$PATH"
 # requirements.txt 파일 생성
 
 COPY . .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 
 WORKDIR /usr/src/app/web
