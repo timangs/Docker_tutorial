@@ -1,5 +1,12 @@
 asgiref==3.8.1
 Django==5.1.7
+dnspython==2.7.0
+eventlet==0.39.1
+gevent==24.11.1
+greenlet==3.1.1
 gunicorn==23.0.0
 packaging==24.2
+setuptools==76.0.0
 sqlparse==0.5.3
+zope.event==5.0
+zope.interface==7.2

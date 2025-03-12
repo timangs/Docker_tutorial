@@ -5,6 +5,8 @@ docker cp <names>:/path/requirements.txt ./requirements.txt
 docker start [<contaniner_id>|<image>]
 docker exec -it [<contaniner_id>|<image>] /bin/bash
 docker run -it --entrypoint /bin/bash test:test
+docker-compose up -d --build
+
 
 docker images
 docker ps
