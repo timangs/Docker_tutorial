@@ -1,0 +1,50 @@
+# docker-compose.yml
+# version: '3.8' # Docker Compose 파일 버전 (최신 버전에서는 불필요하여 주석 처리 또는 삭제)
+
+services:
+  # Elasticsearch 단일 노드
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2 # 사용할 Elasticsearch 이미지 버전
+    container_name: es01
+    environment:
+      - node.name=es01 # 노드 이름 설정
+      - cluster.name=es-docker-cluster # 클러스터 이름 설정
+      # - discovery.seed_hosts=es02,es03 # 단일 노드에서는 불필요
+      # - cluster.initial_master_nodes=es01,es02,es03 # 단일 노드에서는 불필요
+      - bootstrap.memory_lock=true # 메모리 스왑 방지 (성능 향상)
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Elasticsearch JVM 힙 메모리 설정 (필요시 조정)
+      - xpack.security.enabled=false # 개발/테스트 목적으로 보안 기능 비활성화 (실제 운영 시에는 true 권장)
+      - discovery.type=single-node # 단일 노드 모드로 명시적 설정 (권장)
+    ulimits: # 리소스 제한 설정
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data # 데이터 영구 저장을 위한 볼륨 마운트
+    ports:
+      - 9200:9200 # 호스트와 컨테이너 간 포트 매핑 (HTTP)
+      - 9300:9300 # 호스트와 컨테이너 간 포트 매핑 (Transport) - 단일 노드에서는 외부 노출 불필요할 수 있음
+    networks:
+      - elastic # 모든 서비스를 연결할 네트워크
+
+  # Kibana (Elasticsearch 시각화 도구)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.2 # 사용할 Kibana 이미지 버전
+    container_name: kibana
+    ports:
+      - 5601:5601 # 호스트와 컨테이너 간 포트 매핑
+    environment:
+      # ELASTICSEARCH_URL: http://es01:9200 # ELASTICSEARCH_HOSTS 가 우선 적용됨 (주석 처리 가능)
+      ELASTICSEARCH_HOSTS: '["http://es01:9200"]' # 연결할 Elasticsearch 노드 주소 (단일 노드)
+    depends_on: # Elasticsearch 노드가 실행된 후에 Kibana 실행
+      - es01
+    networks:
+      - elastic
+
+volumes: # 데이터 영구 저장을 위한 Docker 볼륨 정의
+  esdata01:
+    driver: local
+
+networks: # 컨테이너 간 통신을 위한 Docker 네트워크 정의
+  elastic:
+    driver: bridge
